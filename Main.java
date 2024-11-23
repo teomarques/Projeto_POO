@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 /**
@@ -10,12 +11,25 @@ public class Main {
     private static final ArrayList<Cliente> clientes = new ArrayList<>();
     private static final ArrayList<Fatura> faturas = new ArrayList<>();
 
+    /**
+     * Método Main
+     */
     public static void main(String[] args) {
-        int opcao;
+        int opcao = -1;
+        boolean entradaValida = false;
 
         do {
             mostrarMenu();
-            opcao = scanner.nextInt();
+            while (!entradaValida) {
+                try {
+                    System.out.print("Digite uma opção: ");
+                    opcao = scanner.nextInt(); // Tenta ler o próximo inteiro
+                    entradaValida = true; // Se a leitura for bem-sucedida, sai do loop
+                } catch (InputMismatchException e) {
+                    System.out.println("Erro: Por favor, insira um número inteiro válido.");
+                    scanner.nextLine(); // Limpa o buffer do scanner para evitar loop infinito
+                }
+            }
             scanner.nextLine(); // Consumir a nova linha
             switch (opcao) {
                 case 1:
@@ -163,21 +177,57 @@ public class Main {
     private static ProdutoFarmacia criarProdutoFarmacia() {
         System.out.print("Código do produto: ");
         String codigo = scanner.nextLine();
+
         System.out.print("Nome do produto: ");
         String nome = scanner.nextLine();
+
         System.out.print("Descrição do produto: ");
         String descricao = scanner.nextLine();
-        System.out.print("Quantidade: ");
-        int quantidade = scanner.nextInt();
-        System.out.print("Valor unitário: ");
-        double valorUnitario = scanner.nextDouble();
-        scanner.nextLine(); // Consumir a nova linha
+
+        int quantidade;
+        while (true) {
+            try {
+                System.out.print("Quantidade: ");
+                quantidade = Integer.parseInt(scanner.nextLine());
+                if (quantidade < 1) {
+                    System.out.println("A quantidade deve ser maior que 0. Tente novamente.");
+                    continue;
+                }
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("Erro: Por favor, insira um número válido para a quantidade.");
+            }
+        }
+
+        double valorUnitario;
+        while (true) {
+            try {
+                System.out.print("Valor unitário: ");
+                valorUnitario = Double.parseDouble(scanner.nextLine());
+                if (valorUnitario <= 0) {
+                    System.out.println("O valor unitário deve ser maior que 0. Tente novamente.");
+                    continue;
+                }
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("Erro: Por favor, insira um número válido para o valor unitário.");
+            }
+        }
 
         System.out.print("Possui prescrição? (s/n): ");
         boolean prescricao = scanner.nextLine().equalsIgnoreCase("s");
 
-        System.out.print("Categoria (BELEZA, BEM_ESTAR, BEBES, ANIMAIS, OUTRO): ");
-        CategoriaFarmacia categoria = CategoriaFarmacia.valueOf(scanner.nextLine().toUpperCase());
+        CategoriaFarmacia categoria;
+        while (true) {
+            try {
+                System.out.print("Categoria (BELEZA, BEM_ESTAR, BEBES, ANIMAIS, OUTRO): ");
+                String categoriaInput = scanner.nextLine().trim().replace(" ", "_").toUpperCase();
+                categoria = CategoriaFarmacia.valueOf(categoriaInput);
+                break;
+            } catch (IllegalArgumentException e) {
+                System.out.println("Erro: Categoria inválida. Por favor, escolha entre BELEZA, BEM_ESTAR, BEBES, ANIMAIS ou OUTRO.");
+            }
+        }
 
         System.out.print("Nome do médico (deixe vazio se não houver prescrição): ");
         String medicoPrescritor = scanner.nextLine();
