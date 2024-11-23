@@ -13,6 +13,17 @@ public class ProdutoAlimentar extends Produto {
     private TipoTaxa tipoTaxa;
     private ArrayList<Certificacao> certificacoes;
 
+    /**
+     * Método setter ProdutoAlimentar para os atributos da classe ProdutoAlimentar
+     * @param codigo
+     * @param nome
+     * @param descricao
+     * @param quantidade
+     * @param valorUnitario
+     * @param isBiologico
+     * @param tipoTaxa
+     * @param certificacoes
+     */
     public ProdutoAlimentar(String codigo, String nome, String descricao, int quantidade, double valorUnitario,
                             boolean isBiologico, TipoTaxa tipoTaxa, ArrayList<Certificacao> certificacoes) {
         super(codigo, nome, descricao, quantidade, valorUnitario);
@@ -21,6 +32,10 @@ public class ProdutoAlimentar extends Produto {
         this.certificacoes = certificacoes;
     }
 
+    /**
+     * implementação específica do método abstrato getTaxaIVA de Taxavel para Produto
+     * @return
+     */
     @Override
     public double getTaxaIVA() {
         double taxaBase = switch (tipoTaxa) {
@@ -36,6 +51,10 @@ public class ProdutoAlimentar extends Produto {
         return taxaBase;
     }
 
+    /**
+     * implementação específica do método abstrato calcularValorComIVA de Taxavel para Produto
+     * @return
+     */
     @Override
     public double calcularValorComIVA() {
         double valorComIVA = super.calcularValorComIVA();
