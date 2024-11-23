@@ -8,6 +8,17 @@ public class ProdutoFarmacia extends Produto {
     private CategoriaFarmacia categoria;
     private String medicoPrescritor;
 
+    /**
+     * setter ProdutoFarmacia para atributos da classe ProdutoFarmacia
+     * @param codigo
+     * @param nome
+     * @param descricao
+     * @param quantidade
+     * @param valorUnitario
+     * @param prescricao
+     * @param categoria
+     * @param medicoPrescritor
+     */
     public ProdutoFarmacia(String codigo, String nome, String descricao, int quantidade, double valorUnitario,
                            boolean prescricao, CategoriaFarmacia categoria, String medicoPrescritor) {
         super(codigo, nome, descricao, quantidade, valorUnitario);
@@ -16,6 +27,10 @@ public class ProdutoFarmacia extends Produto {
         this.medicoPrescritor = medicoPrescritor;
     }
 
+    /**
+     * implementação específica do método abstrato getTaxaIVA de Taxavel para Produto
+     * @return
+     */
     @Override
     public double getTaxaIVA() {
         if (prescricao) {
