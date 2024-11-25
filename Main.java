@@ -53,7 +53,7 @@ public class Main {
                             entradaValida = false; // Permite repetir o menu
                     }
 
-                } catch (InputMismatchException e) {
+                } catch (Exception e) {
                     System.out.println("Erro: Por favor, insira um número inteiro válido.");
                     scanner.nextLine(); // Limpa o buffer para evitar loop infinito
                 }
@@ -73,18 +73,96 @@ public class Main {
     }
 
     private static void criarOuEditarCliente() {
-        System.out.print("Digite o nome do cliente: ");
-        String nome = scanner.nextLine();
-        System.out.print("Digite o NIF do cliente: ");
-        String nif = scanner.nextLine();
-        System.out.print("Digite a localização (Continente, Madeira ou Açores): ");
-        String localizacao = scanner.nextLine();
-
-        System.out.print("Escolha a taxa padrão do cliente (REDUZIDA, INTERMEDIARIA, NORMAL): ");
-        TipoTaxa taxaPadrao = TipoTaxa.valueOf(scanner.nextLine().toUpperCase());
+        // Criando e editando cliente
+        String nome = lerNomeCliente();
+        String nif = lerNifCliente();
+        String localizacao = lerLocalizacaoCliente();
+        TipoTaxa taxaPadrao = lerTipoTaxa();
 
         Cliente cliente = new Cliente(nome, nif, localizacao, taxaPadrao);
 
+        // Adicionando certificações se necessário
+        adicionarCertificacoes(cliente);
+
+        clientes.add(cliente);
+        System.out.println("Cliente adicionado com sucesso.");
+    }
+
+    private static String lerNomeCliente() {
+        while (true) {
+            try {
+                System.out.print("Digite o nome do cliente: ");
+                String nome = scanner.nextLine().trim();
+                if (nome.isEmpty()) {
+                    throw new IllegalArgumentException("O nome do cliente não pode ser vazio.");
+                }
+                return nome;
+            } catch (IllegalArgumentException e) {
+                System.out.println("Erro: " + e.getMessage());
+            }
+        }
+    }
+
+    private static String lerNifCliente() {
+        while (true) {
+            try {
+                System.out.print("Digite o NIF do cliente: ");
+                String nif = scanner.nextLine().trim();
+
+                if (nif.isEmpty()) {
+                    throw new IllegalArgumentException("O NIF não pode ser vazio.");
+                }
+
+                if (!nif.matches("\\d+")) {
+                    throw new IllegalArgumentException("O NIF deve ser composto apenas por números.");
+                }
+
+                return nif;
+            } catch (IllegalArgumentException e) {
+                System.out.println("Erro: " + e.getMessage());
+            }
+        }
+    }
+
+    private static String lerLocalizacaoCliente() {
+        while (true) {
+            try {
+                System.out.print("Digite a localização (Continente, Madeira ou Açores): ");
+                String localizacao = scanner.nextLine().trim();
+
+                if (localizacao.isEmpty()) {
+                    throw new IllegalArgumentException("A localização não pode ser vazia.");
+                }
+
+                if (!localizacao.equalsIgnoreCase("Continente") && !localizacao.equalsIgnoreCase("Madeira") && !localizacao.equalsIgnoreCase("Açores")) {
+                    throw new IllegalArgumentException("A localização deve ser uma das seguintes: Continente, Madeira ou Açores.");
+                }
+
+                return localizacao;
+            } catch (IllegalArgumentException e) {
+                System.out.println("Erro: " + e.getMessage());
+            }
+        }
+    }
+
+    private static TipoTaxa lerTipoTaxa() {
+        while (true) {
+            try {
+                System.out.print("Escolha a taxa do cliente (REDUZIDA, INTERMEDIARIA, NORMAL): ");
+                String tipoTaxaInput = scanner.nextLine().toUpperCase().trim();
+
+                if (tipoTaxaInput.isEmpty()) {
+                    throw new IllegalArgumentException("O tipo de taxa não pode ser vazio.");
+                }
+
+                return TipoTaxa.valueOf(tipoTaxaInput);
+            } catch (IllegalArgumentException e) {
+                System.out.println("Erro: Taxa inválida. Escolha entre REDUZIDA, INTERMEDIARIA ou NORMAL.");
+            }
+        }
+    }
+
+    private static void adicionarCertificacoes(Cliente cliente) {
         System.out.println("Deseja adicionar certificações? (s/n)");
         if (scanner.nextLine().equalsIgnoreCase("s")) {
             for (Certificacao cert : Certificacao.values()) {
@@ -94,9 +172,6 @@ public class Main {
                 }
             }
         }
-
-        clientes.add(cliente);
-        System.out.println("Cliente adicionado com sucesso.");
     }
 
     private static void listarClientes() {
@@ -121,12 +196,14 @@ public class Main {
         for (int i = 0; i < clientes.size(); i++) {
             System.out.printf("%d - %s%n", i + 1, clientes.get(i).getNome());
         }
+
         int clienteIndex = scanner.nextInt() - 1;
         scanner.nextLine(); // Consumir a nova linha
         Cliente cliente = clientes.get(clienteIndex);
 
-        Fatura fatura = new Fatura(faturas.size() + 1, cliente, new Date());
+        Fatura fatura = new Fatura(faturas.size() + 1, cliente, new java.util.Date());
 
+        // Perguntar e adicionar produtos à fatura
         String opcao;
         do {
             System.out.println("Deseja adicionar um produto alimentar ou de farmácia? (alimentar/farmacia/nao)");
@@ -140,30 +217,121 @@ public class Main {
             }
         } while (!opcao.equals("nao"));
 
+        // Verificando se a fatura tem produtos
+        if (fatura.getProdutos().isEmpty()) {
+            System.out.println("Erro: A fatura deve conter pelo menos um produto.");
+            return;
+        }
+
         faturas.add(fatura);
         System.out.println("Fatura criada com sucesso.");
     }
 
     private static ProdutoAlimentar criarProdutoAlimentar() {
-        System.out.print("Código do produto: ");
-        String codigo = scanner.nextLine();
-        System.out.print("Nome do produto: ");
-        String nome = scanner.nextLine();
-        System.out.print("Descrição do produto: ");
-        String descricao = scanner.nextLine();
-        System.out.print("Quantidade: ");
-        int quantidade = scanner.nextInt();
-        System.out.print("Valor unitário: ");
-        double valorUnitario = scanner.nextDouble();
-        scanner.nextLine(); // Consumir a nova linha
+        // Criar produto alimentar com exceções
+        while (true) {
+            try {
+                System.out.print("Código do produto: ");
+                String codigo = scanner.nextLine();
 
-        System.out.print("É biológico? (s/n): ");
-        boolean isBiologico = scanner.nextLine().equalsIgnoreCase("s");
+                System.out.print("Nome do produto: ");
+                String nome = scanner.nextLine();
 
-        System.out.print("Tipo de taxa (REDUZIDA, INTERMEDIARIA, NORMAL): ");
-        TipoTaxa tipoTaxa = TipoTaxa.valueOf(scanner.nextLine().toUpperCase());
+                System.out.print("Descrição do produto: ");
+                String descricao = scanner.nextLine();
 
-        ArrayList<Certificacao> certificacoes = new ArrayList<>();
+                int quantidade = lerQuantidadeProduto();
+                double valorUnitario = lerValorUnitarioProduto();
+
+                System.out.print("É biológico? (s/n): ");
+                boolean isBiologico = scanner.nextLine().equalsIgnoreCase("s");
+
+                TipoTaxa tipoTaxa = lerTipoTaxa();
+
+                ArrayList<Certificacao> certificacoes = new ArrayList<>();
+                adicionarCertificacoesProduto(certificacoes);
+
+                return new ProdutoAlimentar(codigo, nome, descricao, quantidade, valorUnitario, isBiologico, tipoTaxa, certificacoes);
+            } catch (IllegalArgumentException e) {
+                System.out.println("Erro: " + e.getMessage());
+            }
+        }
+    }
+
+    private static ProdutoFarmacia criarProdutoFarmacia() {
+        while (true) {
+            try {
+                System.out.print("Código do produto: ");
+                String codigo = scanner.nextLine();
+
+                System.out.print("Nome do produto: ");
+                String nome = scanner.nextLine();
+
+                System.out.print("Descrição do produto: ");
+                String descricao = scanner.nextLine();
+
+                // Validar quantidade e valor unitário
+                int quantidade = lerQuantidadeProduto();
+                double valorUnitario = lerValorUnitarioProduto();
+
+                System.out.print("Possui prescrição? (s/n): ");
+                boolean prescricao = scanner.nextLine().equalsIgnoreCase("s");
+
+                CategoriaFarmacia categoria = lerCategoriaFarmacia();
+
+                // Se o produto tem prescrição, solicitar o nome do médico
+                String medicoPrescritor = null;
+                if (prescricao) {
+                    System.out.print("Nome do médico que prescreveu (deixe vazio se não houver): ");
+                    medicoPrescritor = scanner.nextLine().trim();
+                    // Se o campo do médico estiver vazio, lançar exceção
+                    if (medicoPrescritor.isEmpty()) {
+                        throw new IllegalArgumentException("O nome do médico é obrigatório para produtos com prescrição.");
+                    }
+                }
+
+                // Criando o produto de farmácia com as informações fornecidas
+                return new ProdutoFarmacia(codigo, nome, descricao, quantidade, valorUnitario, prescricao, categoria, medicoPrescritor);
+            } catch (IllegalArgumentException e) {
+                System.out.println("Erro: " + e.getMessage());
+            }
+        }
+    }
+    private static int lerQuantidadeProduto() {
+        while (true) {
+            try {
+                System.out.print("Quantidade: ");
+                int quantidade = Integer.parseInt(scanner.nextLine());
+                if (quantidade <= 0) {
+                    throw new IllegalArgumentException("A quantidade deve ser maior que 0.");
+                }
+                return quantidade;
+            } catch (NumberFormatException e) {
+                System.out.println("Erro: Por favor, insira um número válido para a quantidade.");
+            } catch (IllegalArgumentException e) {
+                System.out.println("Erro: " + e.getMessage());
+            }
+        }
+    }
+
+    private static double lerValorUnitarioProduto() {
+        while (true) {
+            try {
+                System.out.print("Valor unitário: ");
+                double valorUnitario = Double.parseDouble(scanner.nextLine());
+                if (valorUnitario <= 0) {
+                    throw new IllegalArgumentException("O valor unitário deve ser maior que 0.");
+                }
+                return valorUnitario;
+            } catch (NumberFormatException e) {
+                System.out.println("Erro: Por favor, insira um número válido para o valor unitário.");
+            } catch (IllegalArgumentException e) {
+                System.out.println("Erro: " + e.getMessage());
+            }
+        }
+    }
+
+    private static void adicionarCertificacoesProduto(ArrayList<Certificacao> certificacoes) {
         System.out.println("Deseja adicionar certificações? (s/n)");
         if (scanner.nextLine().equalsIgnoreCase("s")) {
             for (Certificacao cert : Certificacao.values()) {
@@ -173,69 +341,24 @@ public class Main {
                 }
             }
         }
-
-        return new ProdutoAlimentar(codigo, nome, descricao, quantidade, valorUnitario, isBiologico, tipoTaxa, certificacoes);
     }
 
-    private static ProdutoFarmacia criarProdutoFarmacia() {
-        System.out.print("Código do produto: ");
-        String codigo = scanner.nextLine();
-
-        System.out.print("Nome do produto: ");
-        String nome = scanner.nextLine();
-
-        System.out.print("Descrição do produto: ");
-        String descricao = scanner.nextLine();
-
-        int quantidade;
-        while (true) {
-            try {
-                System.out.print("Quantidade: ");
-                quantidade = Integer.parseInt(scanner.nextLine());
-                if (quantidade < 1) {
-                    System.out.println("A quantidade deve ser maior que 0. Tente novamente.");
-                    continue;
-                }
-                break;
-            } catch (NumberFormatException e) {
-                System.out.println("Erro: Por favor, insira um número válido para a quantidade.");
-            }
-        }
-
-        double valorUnitario;
-        while (true) {
-            try {
-                System.out.print("Valor unitário: ");
-                valorUnitario = Double.parseDouble(scanner.nextLine());
-                if (valorUnitario <= 0) {
-                    System.out.println("O valor unitário deve ser maior que 0. Tente novamente.");
-                    continue;
-                }
-                break;
-            } catch (NumberFormatException e) {
-                System.out.println("Erro: Por favor, insira um número válido para o valor unitário.");
-            }
-        }
-
-        System.out.print("Possui prescrição? (s/n): ");
-        boolean prescricao = scanner.nextLine().equalsIgnoreCase("s");
-
-        CategoriaFarmacia categoria;
+    private static CategoriaFarmacia lerCategoriaFarmacia() {
         while (true) {
             try {
                 System.out.print("Categoria (BELEZA, BEM_ESTAR, BEBES, ANIMAIS, OUTRO): ");
                 String categoriaInput = scanner.nextLine().trim().replace(" ", "_").toUpperCase();
-                categoria = CategoriaFarmacia.valueOf(categoriaInput);
-                break;
+
+                if (categoriaInput.isEmpty()) {
+                    throw new IllegalArgumentException("A categoria não pode ser vazia.");
+                }
+
+                return CategoriaFarmacia.valueOf(categoriaInput);
             } catch (IllegalArgumentException e) {
-                System.out.println("Erro: Categoria inválida. Por favor, escolha entre BELEZA, BEM_ESTAR, BEBES, ANIMAIS ou OUTRO.");
+                System.out.println("Erro: Categoria inválida. " + e.getMessage());
+                System.out.println("Por favor, escolha entre BELEZA, BEM_ESTAR, BEBES, ANIMAIS ou OUTRO.");
             }
         }
-
-        System.out.print("Nome do médico (deixe vazio se não houver prescrição): ");
-        String medicoPrescritor = scanner.nextLine();
-
-        return new ProdutoFarmacia(codigo, nome, descricao, quantidade, valorUnitario, prescricao, categoria, medicoPrescritor.isEmpty() ? null : medicoPrescritor);
     }
 
     private static void listarFaturas() {
@@ -244,17 +367,9 @@ public class Main {
         } else {
             System.out.println("Lista de Faturas:");
             for (Fatura fatura : faturas) {
-                System.out.printf("Fatura #%d, Cliente: %s, Data: %s%n",
-                        fatura.getNumeroFatura(), fatura.getCliente().getNome(), fatura.getData());
-                System.out.println("Produtos na Fatura:");
-
-                // Usar o método polimórfico para exibir detalhes de cada produto
-                for (Produto produto : fatura.getProdutos()) {
-                    exibirInformacoesProduto(produto);
-                }
-
-                System.out.printf("Total Sem IVA: %.2f | Total Com IVA: %.2f%n%n",
-                        fatura.calcularTotalSemIVA(), fatura.calcularTotalComIVA());
+                System.out.printf("Fatura #%d, Cliente: %s, Localização: %s, Total Sem IVA: %.2f, Total Com IVA: %.2f%n",
+                        fatura.getNumeroFatura(), fatura.getCliente().getNome(),
+                        fatura.getCliente().getLocalizacao(), fatura.calcularTotalSemIVA(), fatura.calcularTotalComIVA());
             }
         }
     }
@@ -273,24 +388,6 @@ public class Main {
             System.out.println("Fatura não encontrada.");
         } else {
             fatura.listarProdutos();
-        }
-    }
-
-    // Método polimórfico
-    private static void exibirInformacoesProduto(Produto produto) {
-        System.out.printf("Produto: %s | Descrição: %s | Quantidade: %d | Valor Total: %.2f | Valor com IVA: %.2f%n",
-                produto.getNome(), produto.getDescricao(), produto.getQuantidade(),
-                produto.calcularValorTotal(), produto.calcularValorComIVA());
-
-        // Verificação adicional para tipos específicos de produtos
-        if (produto instanceof ProdutoAlimentar) {
-            ProdutoAlimentar alimentar = (ProdutoAlimentar) produto;
-            System.out.println("  - Tipo de Taxa: " + alimentar.getTipoTaxa());
-            System.out.println("  - Biológico: " + (alimentar.isBiologico() ? "Sim" : "Não"));
-        } else if (produto instanceof ProdutoFarmacia) {
-            ProdutoFarmacia farmacia = (ProdutoFarmacia) produto;
-            System.out.println("  - Categoria: " + farmacia.getCategoria());
-            System.out.println("  - Prescrição: " + (farmacia.isPrescricao() ? "Sim" : "Não"));
         }
     }
 }
