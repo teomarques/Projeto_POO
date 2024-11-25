@@ -1,22 +1,17 @@
+import java.io.Serializable;
+
 /**
- * Classe Abstrata Produto implementa taxavel
- * @author teomarques
- * @version 1.0
+ * Classe abstrata Produto
  */
-public abstract class Produto implements Taxavel {
-    protected String codigo;
-    protected String nome;
-    protected String descricao;
-    protected int quantidade;
-    protected double valorUnitario;
+public abstract class Produto implements Serializable {
+    private String codigo;
+    private String nome;
+    private String descricao;
+    private int quantidade;
+    private double valorUnitario;
 
     /**
-     * setter para todos os atributos de Produto
-     * @param codigo
-     * @param nome
-     * @param descricao
-     * @param quantidade
-     * @param valorUnitario
+     * Construtor da classe Produto
      */
     public Produto(String codigo, String nome, String descricao, int quantidade, double valorUnitario) {
         this.codigo = codigo;
@@ -26,33 +21,52 @@ public abstract class Produto implements Taxavel {
         this.valorUnitario = valorUnitario;
     }
 
+    // Getters
+    public String getCodigo() {
+        return codigo;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public int getQuantidade() {
+        return quantidade;
+    }
+
+    public double getValorUnitario() {
+        return valorUnitario;
+    }
+
+    // Setters
+    public void setQuantidade(int quantidade) {
+        this.quantidade = quantidade;
+    }
+
+    public void setValorUnitario(double valorUnitario) {
+        this.valorUnitario = valorUnitario;
+    }
+
     /**
-     * método para calcular valor total da compra
-     * @return
+     * Calcula o valor total sem IVA (quantidade * valor unitário)
      */
     public double calcularValorTotal() {
         return quantidade * valorUnitario;
     }
 
     /**
-     * método abstrato implementa getTaxaIVA da interface Taxavel
-     * @return
+     * Calcula o valor total com IVA.
+     * Método abstrato que deve ser implementado pelas subclasses.
      */
-    @Override
+    public abstract double calcularValorComIVA();
+
+    /**
+     * Retorna a taxa de IVA do produto.
+     * Método abstrato que deve ser implementado pelas subclasses.
+     */
     public abstract double getTaxaIVA();
-
-    /**
-     * método abstrato implementa calcularValorComIVA da interface Taxavel
-     * @return
-     */
-    @Override
-    public double calcularValorComIVA() {
-        return calcularValorTotal() * (1 + getTaxaIVA() / 100);
-    }
-
-    /**
-     * Método getter getNome
-     * @return
-     */
-    public String getNome() { return nome; }
 }
