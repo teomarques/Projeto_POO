@@ -70,7 +70,6 @@ public class Main {
         System.out.println("4. Listar faturas");
         System.out.println("5. Visualizar fatura");
         System.out.println("6. Sair");
-        System.out.print("Escolha uma opção: ");
     }
 
     private static void criarOuEditarCliente() {
@@ -245,8 +244,16 @@ public class Main {
         } else {
             System.out.println("Lista de Faturas:");
             for (Fatura fatura : faturas) {
-                System.out.printf("Fatura #%d, Cliente: %s, Data: %s, Total (sem IVA): %.2f, Total (com IVA): %.2f%n",
-                        fatura.getNumeroFatura(), fatura.getCliente().getNome(), fatura.getData(),
+                System.out.printf("Fatura #%d, Cliente: %s, Data: %s%n",
+                        fatura.getNumeroFatura(), fatura.getCliente().getNome(), fatura.getData());
+                System.out.println("Produtos na Fatura:");
+
+                // Usar o método polimórfico para exibir detalhes de cada produto
+                for (Produto produto : fatura.getProdutos()) {
+                    exibirInformacoesProduto(produto);
+                }
+
+                System.out.printf("Total Sem IVA: %.2f | Total Com IVA: %.2f%n%n",
                         fatura.calcularTotalSemIVA(), fatura.calcularTotalComIVA());
             }
         }
@@ -266,6 +273,24 @@ public class Main {
             System.out.println("Fatura não encontrada.");
         } else {
             fatura.listarProdutos();
+        }
+    }
+
+    // Método polimórfico
+    private static void exibirInformacoesProduto(Produto produto) {
+        System.out.printf("Produto: %s | Descrição: %s | Quantidade: %d | Valor Total: %.2f | Valor com IVA: %.2f%n",
+                produto.getNome(), produto.getDescricao(), produto.getQuantidade(),
+                produto.calcularValorTotal(), produto.calcularValorComIVA());
+
+        // Verificação adicional para tipos específicos de produtos
+        if (produto instanceof ProdutoAlimentar) {
+            ProdutoAlimentar alimentar = (ProdutoAlimentar) produto;
+            System.out.println("  - Tipo de Taxa: " + alimentar.getTipoTaxa());
+            System.out.println("  - Biológico: " + (alimentar.isBiologico() ? "Sim" : "Não"));
+        } else if (produto instanceof ProdutoFarmacia) {
+            ProdutoFarmacia farmacia = (ProdutoFarmacia) produto;
+            System.out.println("  - Categoria: " + farmacia.getCategoria());
+            System.out.println("  - Prescrição: " + (farmacia.isPrescricao() ? "Sim" : "Não"));
         }
     }
 }
