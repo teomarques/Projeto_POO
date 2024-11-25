@@ -1,63 +1,54 @@
-/**
- * @author teomarques
- * @version 1.0
- */
-
 import java.util.ArrayList;
 
-/**
- * Subclasse ProdutoAlimentar de Produto
- */
 public class ProdutoAlimentar extends Produto {
     private boolean isBiologico;
     private TipoTaxa tipoTaxa;
     private ArrayList<Certificacao> certificacoes;
 
     /**
-     * Método setter ProdutoAlimentar para os atributos da classe ProdutoAlimentar
-     * @param codigo
-     * @param nome
-     * @param descricao
-     * @param quantidade
-     * @param valorUnitario
-     * @param isBiologico
-     * @param tipoTaxa
-     * @param certificacoes
+     * Construtor da classe ProdutoAlimentar
      */
-    public ProdutoAlimentar(String codigo, String nome, String descricao, int quantidade, double valorUnitario,
-                            boolean isBiologico, TipoTaxa tipoTaxa, ArrayList<Certificacao> certificacoes) {
+    public ProdutoAlimentar(String codigo, String nome, String descricao, int quantidade,
+                            double valorUnitario, boolean isBiologico, TipoTaxa tipoTaxa,
+                            ArrayList<Certificacao> certificacoes) {
         super(codigo, nome, descricao, quantidade, valorUnitario);
         this.isBiologico = isBiologico;
         this.tipoTaxa = tipoTaxa;
-        this.certificacoes = certificacoes;
+        this.certificacoes = certificacoes != null ? certificacoes : new ArrayList<>();
     }
 
-    /**
-     * implementação específica do método abstrato getTaxaIVA de Taxavel para Produto
-     * @return
-     */
-    @Override
-    public double getTaxaIVA() {
-        double taxaBase = switch (tipoTaxa) {
-            case REDUZIDA -> 6;
-            case INTERMEDIARIA -> 13;
-            case NORMAL -> 23;
-        };
-        if (tipoTaxa == TipoTaxa.REDUZIDA && certificacoes.size() == 4) {
-            taxaBase -= 1;
-        } else if (tipoTaxa == TipoTaxa.INTERMEDIARIA && certificacoes.contains(Certificacao.GMP)) {
-            taxaBase += 1;
-        }
-        return taxaBase;
+    // Getters
+    public boolean isBiologico() {
+        return isBiologico;
     }
 
-    /**
-     * implementação específica do método abstrato calcularValorComIVA de Taxavel para Produto
-     * @return
-     */
+    public TipoTaxa getTipoTaxa() {
+        return tipoTaxa;
+    }
+
+    public ArrayList<Certificacao> getCertificacoes() {
+        return certificacoes;
+    }
+
+    // Implementação do método abstrato calcularValorComIVA
     @Override
     public double calcularValorComIVA() {
-        double valorComIVA = super.calcularValorComIVA();
-        return isBiologico ? valorComIVA * 0.9 : valorComIVA;
+        double taxaIVA = getTaxaIVA() / 100.0;
+        double valorComIVA = calcularValorTotal() * (1 + taxaIVA);
+        // Desconto para produtos biológicos
+        if (isBiologico) {
+            valorComIVA *= 0.9; // 10% de desconto
+        }
+        return valorComIVA;
+    }
+
+    // Implementação do método abstrato getTaxaIVA
+    @Override
+    public double getTaxaIVA() {
+        return switch (tipoTaxa) {
+            case REDUZIDA -> 6.0;
+            case INTERMEDIARIA -> 13.0;
+            case NORMAL -> 23.0;
+        };
     }
 }
