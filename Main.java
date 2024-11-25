@@ -16,46 +16,50 @@ public class Main {
      */
     public static void main(String[] args) {
         int opcao = -1;
-        boolean entradaValida = false;
-
         do {
             mostrarMenu();
+            boolean entradaValida = false;
+
+            // Garantir leitura correta da opção
             while (!entradaValida) {
                 try {
                     System.out.print("Digite uma opção: ");
-                    opcao = scanner.nextInt(); // Tenta ler o próximo inteiro
-                    entradaValida = true; // Se a leitura for bem-sucedida, sai do loop
+                    opcao = scanner.nextInt(); // Lê o próximo inteiro
+                    scanner.nextLine(); // Consumir a nova linha após nextInt()
+                    entradaValida = true; // Entrada válida, sai do loop
+
+                    // Processar a opção selecionada imediatamente
+                    switch (opcao) {
+                        case 1:
+                            criarOuEditarCliente();
+                            break;
+                        case 2:
+                            listarClientes();
+                            break;
+                        case 3:
+                            criarFatura();
+                            break;
+                        case 4:
+                            listarFaturas();
+                            break;
+                        case 5:
+                            visualizarFatura();
+                            break;
+                        case 6:
+                            System.out.println("Encerrando o programa.");
+                            break;
+                        default:
+                            System.out.println("Opção inválida! Tente novamente.");
+                            entradaValida = false; // Permite repetir o menu
+                    }
+
                 } catch (InputMismatchException e) {
                     System.out.println("Erro: Por favor, insira um número inteiro válido.");
-                    scanner.nextLine(); // Limpa o buffer do scanner para evitar loop infinito
+                    scanner.nextLine(); // Limpa o buffer para evitar loop infinito
                 }
             }
-            scanner.nextLine(); // Consumir a nova linha
-            switch (opcao) {
-                case 1:
-                    criarOuEditarCliente();
-                    break;
-                case 2:
-                    listarClientes();
-                    break;
-                case 3:
-                    criarFatura();
-                    break;
-                case 4:
-                    listarFaturas();
-                    break;
-                case 5:
-                    visualizarFatura();
-                    break;
-                case 6:
-                    System.out.println("Encerrando o programa.");
-                    break;
-                default:
-                    System.out.println("Opção inválida! Tente novamente.");
-            }
-        } while (opcao != 6);
 
-        scanner.close();
+        } while (opcao != 6);
     }
 
     private static void mostrarMenu() {
