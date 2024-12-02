@@ -23,6 +23,7 @@ public class Main {
      * Método instancia da main Executar
      */
     public void executar() {
+        carregarDadosTexto();
         int opcao = -1;
         do {
             mostrarMenu();
@@ -37,33 +38,51 @@ public class Main {
 
                     // Processar a opção selecionada
                     switch (opcao) {
-                        case 1 -> criarOuEditarCliente();
-                        case 2 -> listarClientes();
-                        case 3 -> criarFatura();
-                        case 4 -> listarFaturas();
-                        case 5 -> visualizarFatura();
-                        case 6 -> System.out.println("Encerrando o programa.");
-                        default -> {
+                        case 1:
+                            criarOuEditarCliente();
+                            break;
+                        case 2:
+                            listarClientes();
+                            break;
+                        case 3:
+                            criarFatura();
+                            break;
+                        case 4:
+                            listarFaturas();
+                            break;
+                        case 5:
+                            visualizarFatura();
+                            break;
+                        case 6:
+                            exibirEstatisticas();
+                            break;
+                        case 7:
+                            System.out.println("Encerrando o programa.");
+                            salvarDadosTexto();
+                            break;
+                        default:
                             System.out.println("Opção inválida! Tente novamente.");
                             entradaValida = false; // Permite repetir o menu
-                        }
                     }
-                } catch (InputMismatchException e) {
+
+                } catch (Exception e) {
                     System.out.println("Erro: Por favor, insira um número inteiro válido.");
-                    scanner.nextLine(); // Limpa o buffer
+                    scanner.nextLine(); // Limpa o buffer para evitar loop infinito
                 }
             }
-        } while (opcao != 6);
+
+        } while (opcao != 7);
     }
 
-    private void mostrarMenu() {
+    private static void mostrarMenu() {
         System.out.println("\nMenu:");
         System.out.println("1. Criar e editar cliente");
         System.out.println("2. Listar clientes");
         System.out.println("3. Criar fatura");
         System.out.println("4. Listar faturas");
         System.out.println("5. Visualizar fatura");
-        System.out.println("6. Sair");
+        System.out.println("6. Estatísticas");
+        System.out.println("7. Sair");
     }
 
     // CRIAR OU EDITAR CLIENTE -------------------------------------------------------------------------------------------
@@ -437,4 +456,137 @@ public class Main {
             System.out.println("  - Prescrição: " + (farmacia.isPrescricao() ? "Sim" : "Não"));
         }
     }
+    private static final String FILE_PATH = "dados.txt";
+
+    private static void salvarDadosTexto() {
+        File ficheiro = new File(FILE_PATH);
+
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(ficheiro))) {
+            // Escrever os clientes
+            bw.write("CLIENTES:");
+            bw.newLine();
+            for (Cliente cliente : clientes) {
+                bw.write(String.format("%s,%s,%s,%s",
+                        cliente.getNome(), cliente.getNif(), cliente.getLocalizacao(), cliente.getTaxaPadrao()));
+                bw.newLine();
+            }
+
+            // Escrever as faturas
+            bw.write("FATURAS:");
+            bw.newLine();
+            for (Fatura fatura : faturas) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(fatura.getNumeroFatura()).append(",")
+                        .append(fatura.getCliente().getNome()).append(",")
+                        .append(fatura.getCliente().getLocalizacao());
+
+                for (Produto produto : fatura.getProdutos()) {
+                    sb.append(";").append(produto.getNome()).append(",")
+                            .append(produto.getQuantidade()).append(",")
+                            .append(produto.getValorUnitario());
+                }
+                bw.write(sb.toString());
+                bw.newLine();
+            }
+
+            System.out.println("Dados salvos no ficheiro de texto com sucesso.");
+        } catch (IOException e) {
+            System.out.println("Erro ao salvar dados no ficheiro de texto: " + e.getMessage());
+        }
+    }
+
+    private static void carregarDadosTexto() {
+        File ficheiro = new File(FILE_PATH);
+
+        if (!ficheiro.exists()) {
+            System.out.println("Ficheiro de dados não encontrado. Começando com dados vazios.");
+            return;
+        }
+
+        try (BufferedReader br = new BufferedReader(new FileReader(ficheiro))) {
+            String linha;
+            boolean lendoClientes = false;
+            boolean lendoFaturas = false;
+
+            while ((linha = br.readLine()) != null) {
+                if (linha.equals("CLIENTES:")) {
+                    lendoClientes = true;
+                    lendoFaturas = false;
+                    continue;
+                } else if (linha.equals("FATURAS:")) {
+                    lendoClientes = false;
+                    lendoFaturas = true;
+                    continue;
+                }
+
+                if (lendoClientes) {
+                    String[] partes = linha.split(",");
+                    String nome = partes[0];
+                    String nif = partes[1];
+                    String localizacao = partes[2];
+                    TipoTaxa taxa = TipoTaxa.valueOf(partes[3]);
+                    clientes.add(new Cliente(nome, nif, localizacao, taxa));
+                } else if (lendoFaturas) {
+                    String[] partes = linha.split(";");
+                    String[] cabecalho = partes[0].split(",");
+
+                    int numeroFatura = Integer.parseInt(cabecalho[0]);
+                    String nomeCliente = cabecalho[1];
+                    String localizacao = cabecalho[2];
+
+                    Cliente cliente = clientes.stream()
+                            .filter(c -> c.getNome().equals(nomeCliente) && c.getLocalizacao().equals(localizacao))
+                            .findFirst()
+                            .orElse(null);
+
+                    if (cliente == null) {
+                        System.out.println("Cliente não encontrado ao carregar a fatura: " + nomeCliente);
+                        continue;
+                    }
+
+                    Fatura fatura = new Fatura(numeroFatura, cliente, new Date()); // Data padrão
+                    for (int i = 1; i < partes.length; i++) {
+                        String[] produtoInfo = partes[i].split(",");
+                        String nomeProduto = produtoInfo[0];
+                        int quantidade = Integer.parseInt(produtoInfo[1]);
+                        double valorUnitario = Double.parseDouble(produtoInfo[2]);
+
+                        Produto produto = new ProdutoAlimentar(nomeProduto, nomeProduto, "", quantidade, valorUnitario, false, TipoTaxa.NORMAL, new ArrayList<>());
+                        fatura.adicionarProduto(produto);
+                    }
+
+                    faturas.add(fatura);
+                }
+            }
+
+            System.out.println("Dados carregados do ficheiro de texto com sucesso.");
+        } catch (IOException e) {
+            System.out.println("Erro ao carregar dados do ficheiro de texto: " + e.getMessage());
+        }
+    }
+    private static void exibirEstatisticas() {
+        int totalFaturas = faturas.size();
+        int totalProdutos = 0;
+        double totalSemIVA = 0;
+        double totalComIVA = 0;
+
+        // Iterar sobre as faturas para calcular os totais
+        for (Fatura fatura : faturas) {
+            totalProdutos += fatura.getProdutos().size();  // Contando os produtos
+            totalSemIVA += fatura.calcularTotalSemIVA();  // Somando valores sem IVA
+            totalComIVA += fatura.calcularTotalComIVA();  // Somando valores com IVA
+        }
+
+        double totalIVA = totalComIVA - totalSemIVA;
+
+        System.out.println("\nEstatísticas:");
+        System.out.printf("Número de Faturas: %d%n", totalFaturas);
+        System.out.printf("Número de Produtos: %d%n", totalProdutos);
+        System.out.printf("Valor Total Sem IVA: %.2f%n", totalSemIVA);
+        System.out.printf("Valor Total do IVA: %.2f%n", totalIVA);
+        System.out.printf("Valor Total Com IVA: %.2f%n", totalComIVA);
+    }
+
+    
 }
+
