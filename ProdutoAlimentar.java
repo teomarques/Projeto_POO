@@ -51,4 +51,17 @@ public class ProdutoAlimentar extends Produto {
             case NORMAL -> 23.0;
         };
     }
+
+    @Override
+    public String exportarFormato() {
+        return String.format("ALIMENTAR,%s,%s,%s,%d,%.2f,%b,%s",
+                this.getCodigo(),
+                this.getNome(),
+                this.getDescricao(),
+                this.getQuantidade(),
+                this.getValorUnitario(),
+                this.isBiologico(),
+                this.getTipoTaxa());
+    }
+
 }
