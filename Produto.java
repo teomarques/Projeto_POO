@@ -69,4 +69,9 @@ public abstract class Produto implements Serializable {
      * Método abstrato que deve ser implementado pelas subclasses.
      */
     public abstract double getTaxaIVA();
+
+    /**
+     * Método abstrato polimórfico para exportar informações específicas de um produto
+     */
+    public abstract String exportarFormato();
 }
