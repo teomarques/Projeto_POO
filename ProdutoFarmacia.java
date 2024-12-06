@@ -49,4 +49,17 @@ public class ProdutoFarmacia extends Produto {
             case OUTRO -> 23.0;
         };
     }
+
+    @Override
+    public String exportarFormato() {
+        return String.format("FARMACIA,%s,%s,%s,%d,%.2f,%b,%s",
+                this.getCodigo(),
+                this.getNome(),
+                this.getDescricao(),
+                this.getQuantidade(),
+                this.getValorUnitario(),
+                this.isPrescricao(),
+                this.getCategoria());
+    }
+
 }
