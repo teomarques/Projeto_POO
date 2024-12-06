@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Classe Main
@@ -67,8 +68,8 @@ public class Main {
         System.out.println("3. Criar e editar faturas");
         System.out.println("4. Listar faturas");
         System.out.println("5. Visualizar fatura");
-        System.out.println("6. Importar faturas");
-        System.out.println("7. Exportar faturas");
+        System.out.println("6. Importar faturas e clientes");
+        System.out.println("7. Exportar faturas e clientes");
         System.out.println("8. Sair");
     }
 
@@ -493,7 +494,16 @@ public class Main {
      * Método para importar informações de clientes e faturas de um arquivo de texto.
      */
     private void importarInfos() {
-        String caminhoArquivo = "infos.txt"; // Alterar para o caminho real do arquivo
+        String caminhoArquivo = "infos.txt";
+
+        // Extrair os NIFs e números de fatura já existentes para evitar duplicados
+        Set<String> nifsExistentes = clientes.stream()
+                .map(Cliente::getNif)
+                .collect(Collectors.toSet());
+
+        Set<Integer> numerosFaturasExistentes = faturas.stream()
+                .map(Fatura::getNumeroFatura)
+                .collect(Collectors.toSet());
 
         try (BufferedReader br = new BufferedReader(new FileReader(caminhoArquivo))) {
             String linha;
@@ -516,9 +526,17 @@ public class Main {
                 }
 
                 if (lendoClientes) {
-                    importarCliente(linha);
+                    String nifLinha = linha.split(";")[0];
+                    if (!nifsExistentes.contains(nifLinha)) {
+                        importarCliente(linha);
+                        nifsExistentes.add(nifLinha); // Atualizar NIFs conhecidos
+                    }
                 } else if (lendoFaturas) {
-                    importarFatura(linha);
+                    int numeroFaturaLinha = Integer.parseInt(linha.split(";")[0]);
+                    if (!numerosFaturasExistentes.contains(numeroFaturaLinha)) {
+                        importarFatura(linha);
+                        numerosFaturasExistentes.add(numeroFaturaLinha); // Atualizar faturas conhecidas
+                    }
                 }
             }
 
@@ -528,8 +546,12 @@ public class Main {
             System.out.println("Erro: Arquivo não encontrado.");
         } catch (IOException e) {
             System.out.println("Erro ao ler o arquivo: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Erro durante a importação: " + e.getMessage());
         }
     }
+
+    // MÉTODO QUE IMPORTA CLIENTE DO FICHEIRO -------------------------------------------------------------------------------------------------------
 
     /**
      * Método auxiliar para importar um cliente.
@@ -555,6 +577,8 @@ public class Main {
             System.out.println("Erro ao importar cliente: " + e.getMessage());
         }
     }
+
+    // MÉTODO QUE IMPORTA FATURA DO FICHEIRO ---------------------------------------------------------------------------------------------------
 
     /**
      * Método auxiliar para importar uma fatura.
