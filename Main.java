@@ -27,6 +27,8 @@ public class Main {
      */
     public void executar() {
         int opcao = -1;
+        importarInfos();
+
         do {
             mostrarMenu();
             boolean entradaValida = false;
@@ -45,9 +47,11 @@ public class Main {
                         case 3 -> criarOuEditarFatura();
                         case 4 -> listarFaturas();
                         case 5 -> visualizarFatura();
-                        case 6 -> importarInfos();
-                        case 7 -> exportarInfos();
-                        case 8 -> System.out.println("Encerrando o programa.");
+                        case 6 -> exibirEstatisticas();
+                        case 7 -> {
+                            exportarInfos();
+                            System.out.println("Encerrando o programa.");
+                        }
                         default -> {
                             System.out.println("Opção inválida! Tente novamente.");
                             entradaValida = false; // Permite repetir o menu
@@ -58,7 +62,7 @@ public class Main {
                     scanner.nextLine(); // Limpa o buffer
                 }
             }
-        } while (opcao != 8);
+        } while (opcao != 7);
     }
 
     private void mostrarMenu() {
@@ -68,9 +72,8 @@ public class Main {
         System.out.println("3. Criar e editar faturas");
         System.out.println("4. Listar faturas");
         System.out.println("5. Visualizar fatura");
-        System.out.println("6. Importar faturas e clientes");
-        System.out.println("7. Exportar faturas e clientes");
-        System.out.println("8. Sair");
+        System.out.println("6. Exibir estatísticas");
+        System.out.println("7. Sair");
     }
 
     // CRIAR OU EDITAR CLIENTE -------------------------------------------------------------------------------------------
@@ -486,6 +489,34 @@ public class Main {
             System.out.println("  - Categoria: " + farmacia.getCategoria());
             System.out.println("  - Prescrição: " + (farmacia.isPrescricao() ? "Sim" : "Não"));
         }
+    }
+
+    // MÉTODO PARA EXIBIR ESTATISTICAS ---------------------------------------------------------------------------------------------------------
+
+    /**
+     * Método para exibir estatísticas de faturas e produtos
+     */
+    private void exibirEstatisticas() {
+        int totalFaturas = faturas.size();
+        int totalProdutos = 0;
+        double totalSemIVA = 0;
+        double totalComIVA = 0;
+
+        // Iterar sobre as faturas para calcular os totais
+        for (Fatura fatura : faturas) {
+            totalProdutos += fatura.getProdutos().size();  // Contando os produtos
+            totalSemIVA += fatura.calcularTotalSemIVA();  // Somando valores sem IVA
+            totalComIVA += fatura.calcularTotalComIVA();  // Somando valores com IVA
+        }
+
+        double totalIVA = totalComIVA - totalSemIVA;
+
+        System.out.println("\nEstatísticas:");
+        System.out.printf("Número de Faturas: %d%n", totalFaturas);
+        System.out.printf("Número de Produtos: %d%n", totalProdutos);
+        System.out.printf("Valor Total Sem IVA: %.2f%n", totalSemIVA);
+        System.out.printf("Valor Total do IVA: %.2f%n", totalIVA);
+        System.out.printf("Valor Total Com IVA: %.2f%n", totalComIVA);
     }
 
     // MÉTODO PARA IMPORTAR INFORMAÇÕES DE CLIENTES E INFOS DE UM ARQUIVO .TXT ---------------------------------------------------------------
