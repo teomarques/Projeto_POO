@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * classe Fatura implementa Serializable
+ */
 public class Fatura implements Serializable {
     private int numeroFatura;
     private Cliente cliente;
@@ -12,6 +15,9 @@ public class Fatura implements Serializable {
 
     /**
      * Construtor da classe Fatura
+     * @param numeroFatura
+     * @param cliente
+     * @param data
      */
     public Fatura(int numeroFatura, Cliente cliente, Date data) {
         if (cliente == null) {
@@ -27,24 +33,42 @@ public class Fatura implements Serializable {
         this.produtos = new ArrayList<>();
     }
 
-    // Getters
+    /**
+     * getter getNumeroFatura
+     * @return
+     */
     public int getNumeroFatura() {
         return numeroFatura;
     }
 
+    /**
+     * getter getCliente
+     * @return
+     */
     public Cliente getCliente() {
         return cliente;
     }
 
+    /**
+     * getter getData
+     * @return
+     */
     public Date getData() {
         return data;
     }
 
+    /**
+     * getter getProdutos
+     * @return
+     */
     public List<Produto> getProdutos() {
         return new ArrayList<>(produtos); // Retorna uma cópia para proteger a lista original
     }
 
-    // Adicionar um produto à fatura
+    /**
+     * Método para adicioner produto ao Arraylist produtos
+     * @param produto
+     */
     public void adicionarProduto(Produto produto) {
         if (produto == null) {
             throw new IllegalArgumentException("O produto não pode ser nulo.");
@@ -52,21 +76,29 @@ public class Fatura implements Serializable {
         produtos.add(produto);
     }
 
-    // Calcular o total sem IVA
+    /**
+     * M+etodo para calcular o total sem IVA
+     * @return
+     */
     public double calcularTotalSemIVA() {
         return produtos.stream()
                 .mapToDouble(Produto::calcularValorTotal)
                 .sum();
     }
 
-    // Calcular o total com IVA
+    /**
+     * Método para calcular o total com IVA
+     * @return
+     */
     public double calcularTotalComIVA() {
         return produtos.stream()
-                .mapToDouble(Produto::calcularValorComIVA)
+                .mapToDouble(produto -> produto.calcularValorComIVA(cliente)) // Passa o cliente
                 .sum();
     }
 
-    // Listar produtos da fatura
+    /**
+     * Método para listar os produtos em uma fatura
+     */
     public void listarProdutos() {
         if (produtos.isEmpty()) {
             System.out.println("Nenhum produto cadastrado na fatura.");
@@ -75,12 +107,15 @@ public class Fatura implements Serializable {
 
         System.out.println("Produtos na Fatura:");
         for (Produto produto : produtos) {
+            // Passa o cliente associado à fatura
             System.out.printf("Produto: %s | Quantidade: %d | Valor Total (sem IVA): %.2f | Valor com IVA: %.2f%n",
-                    produto.getNome(), produto.getQuantidade(), produto.calcularValorTotal(), produto.calcularValorComIVA());
+                    produto.getNome(), produto.getQuantidade(), produto.calcularValorTotal(), produto.calcularValorComIVA(cliente));
         }
     }
 
-    // Exibir informações detalhadas da fatura
+    /**
+     * Método para exibir os detalhes de uma fatura de forma simples
+     */
     public void exibirDetalhes() {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         System.out.printf("Fatura #%d | Cliente: %s | Data: %s%n", numeroFatura, cliente.getNome(), sdf.format(data));
