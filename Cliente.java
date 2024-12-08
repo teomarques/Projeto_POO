@@ -8,7 +8,7 @@ import java.util.ArrayList;
 public class Cliente {
     private String nome;
     private String nif;
-    private String localizacao;
+    private Localizacao localizacao;
     private TipoTaxa taxaPadrao; // Conexão adicional com TipoTaxa
     private ArrayList<Certificacao> certificacoesNecessarias; // Conexão adicional com Certificacao
 
@@ -19,7 +19,7 @@ public class Cliente {
      * @param localizacao
      * @param taxaPadrao
      */
-    public Cliente(String nome, String nif, String localizacao, TipoTaxa taxaPadrao) {
+    public Cliente(String nome, String nif, Localizacao localizacao, TipoTaxa taxaPadrao) {
         this.nome = nome;
         this.nif = nif;
         this.localizacao = localizacao;
@@ -39,9 +39,10 @@ public class Cliente {
     public String getNif() { return nif; }
     /**
      * método getter para Localizacao
+     *
      * @return
      */
-    public String getLocalizacao() { return localizacao; }
+    public Localizacao getLocalizacao() { return localizacao; }
     /**
      * método getter para TaxaPadrao
      * @return
@@ -51,7 +52,9 @@ public class Cliente {
      * método getter para CertificacoesNecessarias
      * @return
      */
-    public ArrayList<Certificacao> getCertificacoesNecessarias() { return certificacoesNecessarias; }
+    public ArrayList<Certificacao> getCertificacoesNecessarias() {
+        return certificacoesNecessarias;
+    }
 
     /**
      * Adiciona uma certificação ao cliente, caso ele ainda não a possua.
