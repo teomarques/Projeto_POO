@@ -1,0 +1,134 @@
+@startuml
+
+package "Enums" {
+  enum CategoriaFarmacia {
+    BELEZA
+    BEM_ESTAR
+    BEBES
+    ANIMAIS
+    OUTRO
+  }
+
+  enum Certificacao {
+    ISO22000
+    FSSC22000
+    HACCP
+    GMP
+  }
+
+  enum TipoTaxa {
+    REDUZIDA
+    INTERMEDIARIA
+    NORMAL
+  }
+}
+
+package "Classes" {
+  class Cliente {
+    - nome: String
+    - nif: String
+    - localizacao: String
+    - taxaPadrao: TipoTaxa
+    - certificacoesNecessarias: ArrayList<Certificacao>
+    + Cliente(nome: String, nif: String, localizacao: String, taxaPadrao: TipoTaxa)
+    + getNome(): String
+    + getNif(): String
+    + getLocalizacao(): String
+    + getTaxaPadrao(): TipoTaxa
+    + getCertificacoesNecessarias(): ArrayList<Certificacao>
+    + adicionarCertificacao(certificacao: Certificacao)
+  }
+
+  abstract class Produto {
+    - codigo: String
+    - nome: String
+    - descricao: String
+    - quantidade: int
+    - valorUnitario: double
+    + Produto(codigo: String, nome: String, descricao: String, quantidade: int, valorUnitario: double)
+    + getCodigo(): String
+    + getNome(): String
+    + getDescricao(): String
+    + getQuantidade(): int
+    + getValorUnitario(): double
+    + calcularValorTotal(): double
+    + calcularValorComIVA(): double
+    + getTaxaIVA(): double
+    + exportarFormato(): String
+  }
+
+  class ProdutoAlimentar extends Produto {
+    - isBiologico: boolean
+    - tipoTaxa: TipoTaxa
+    - certificacoes: ArrayList<Certificacao>
+    + ProdutoAlimentar(codigo: String, nome: String, descricao: String, quantidade: int, valorUnitario: double, isBiologico: boolean, tipoTaxa: TipoTaxa, certificacoes: ArrayList<Certificacao>)
+    + isBiologico(): boolean
+    + getTipoTaxa(): TipoTaxa
+    + getCertificacoes(): ArrayList<Certificacao>
+    + calcularValorComIVA(): double
+    + getTaxaIVA(): double
+  }
+
+  class ProdutoFarmacia extends Produto {
+    - prescricao: boolean
+    - categoria: CategoriaFarmacia
+    - medicoPrescritor: String
+    + ProdutoFarmacia(codigo: String, nome: String, descricao: String, quantidade: int, valorUnitario: double, prescricao: boolean, categoria: CategoriaFarmacia, medicoPrescritor: String)
+    + isPrescricao(): boolean
+    + getCategoria(): CategoriaFarmacia
+    + getMedicoPrescritor(): String
+    + calcularValorComIVA(): double
+    + getTaxaIVA(): double
+  }
+
+  class Fatura {
+    - numeroFatura: int
+    - cliente: Cliente
+    - data: Date
+    - produtos: ArrayList<Produto>
+    + Fatura(numeroFatura: int, cliente: Cliente, data: Date)
+    + getNumeroFatura(): int
+    + getCliente(): Cliente
+    + getData(): Date
+    + getProdutos(): List<Produto>
+    + adicionarProduto(produto: Produto)
+    + calcularTotalSemIVA(): double
+    + calcularTotalComIVA(): double
+    + listarProdutos()
+    + exibirDetalhes()
+  }
+}
+
+package "Main" {
+  class Main {
+    - scanner: Scanner
+    - clientes: ArrayList<Cliente>
+    - faturas: ArrayList<Fatura>
+    + main(args: String[])
+    + executar()
+    + criarOuEditarCliente()
+    + listarClientes()
+    + criarOuEditarFatura()
+    + listarFaturas()
+    + visualizarFatura()
+    + exibirEstatisticas()
+    + importarInfos()
+    + exportarInfos()
+  }
+}
+
+Cliente "1" *-- "0..*" Certificacao
+Cliente "1" *-- "0..*" Fatura
+Fatura "1" *-- "0..*" Produto
+Fatura "1" *-- "1" Cliente
+ProdutoFarmacia --> CategoriaFarmacia
+ProdutoAlimentar --> TipoTaxa
+ProdutoAlimentar "0..*" *-- "0..*" Certificacao
+Produto <|-- ProdutoAlimentar
+Produto <|-- ProdutoFarmacia
+
+Main --> Cliente
+Main --> Fatura
+Main --> Produto
+
+@enduml
