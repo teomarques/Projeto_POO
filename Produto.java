@@ -12,6 +12,11 @@ public abstract class Produto implements Serializable {
 
     /**
      * Construtor da classe Produto
+     * @param codigo
+     * @param nome
+     * @param descricao
+     * @param quantidade
+     * @param valorUnitario
      */
     public Produto(String codigo, String nome, String descricao, int quantidade, double valorUnitario) {
         this.codigo = codigo;
@@ -42,15 +47,6 @@ public abstract class Produto implements Serializable {
         return valorUnitario;
     }
 
-    // Setters
-    public void setQuantidade(int quantidade) {
-        this.quantidade = quantidade;
-    }
-
-    public void setValorUnitario(double valorUnitario) {
-        this.valorUnitario = valorUnitario;
-    }
-
     /**
      * Calcula o valor total sem IVA (quantidade * valor unitário)
      */
@@ -62,11 +58,16 @@ public abstract class Produto implements Serializable {
      * Calcula o valor total com IVA.
      * Método abstrato que deve ser implementado pelas subclasses.
      */
-    public abstract double calcularValorComIVA();
+    public abstract double calcularValorComIVA(Cliente cliente);
 
     /**
      * Retorna a taxa de IVA do produto.
      * Método abstrato que deve ser implementado pelas subclasses.
      */
-    public abstract double getTaxaIVA();
+    public abstract double getTaxaIVA(Cliente cliente);
+
+    /**
+     * Método abstrato polimórfico para exportar informações específicas de um produto
+     */
+    public abstract String exportarFormato();
 }
